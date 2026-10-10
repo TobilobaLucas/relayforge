@@ -1,0 +1,77 @@
+name: relayforge
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: relayforge
+      POSTGRES_USER: relayforge
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?Run the setup script first}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U relayforge -d relayforge"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  api:
+    build: .
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/relayforge
+      DATABASE_USERNAME: relayforge
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:?Run the setup script first}
+      RELAY_ADMIN_TOKEN: ${RELAY_ADMIN_TOKEN:?Run the setup script first}
+      RELAY_ENCRYPTION_KEY: ${RELAY_ENCRYPTION_KEY:?Run the setup script first}
+      # A deliberate local-demo exception. The normal application default is empty.
+      RELAY_DEVELOPMENT_HOSTS: receiver
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      receiver:
+        condition: service_started
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+
+  receiver:
+    image: python:3.13-alpine
+    command: ["python", "-u", "/app/receiver.py"]
+    volumes:
+      - ./examples/receiver.py:/app/receiver.py:ro
+    ports:
+      - "127.0.0.1:9000:9000"
+    user: "65534:65534"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    profiles: [observability]
+    entrypoint: [/bin/sh, -c]
+    command:
+      - 'printf "%s" "$$RELAY_ADMIN_TOKEN" > /tmp/operator-token; exec /bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus'
+    environment:
+      RELAY_ADMIN_TOKEN: ${RELAY_ADMIN_TOKEN:?Run the setup script first}
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+  prometheus-data:

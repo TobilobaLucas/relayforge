@@ -1,0 +1,13 @@
+.git
+.github
+.local
+.env
+.env.*
+target
+docs
+scripts
+examples
+observability
+*.log
+.idea
+.vscode

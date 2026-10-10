@@ -1,0 +1,65 @@
+spring:
+  application:
+    name: relayforge
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/relayforge}
+    username: ${DATABASE_USERNAME:relayforge}
+    password: ${DATABASE_PASSWORD:relayforge-local}
+    hikari:
+      maximum-pool-size: 16
+      connection-timeout: 5000
+  flyway:
+    enabled: true
+  threads:
+    virtual:
+      enabled: true
+  mvc:
+    problemdetails:
+      enabled: true
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+  main:
+    banner-mode: off
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+  error:
+    include-message: never
+    include-stacktrace: never
+  tomcat:
+    max-http-form-post-size: 128KB
+    max-swallow-size: 128KB
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+      group:
+        readiness:
+          include: readinessState,db
+  metrics:
+    tags:
+      application: relayforge
+logging:
+  structured:
+    format:
+      console: logstash
+relay:
+  admin-token: ${RELAY_ADMIN_TOKEN}
+  encryption-key: ${RELAY_ENCRYPTION_KEY}
+  worker-enabled: ${RELAY_WORKER_ENABLED:true}
+  poll-delay-ms: ${RELAY_POLL_DELAY_MS:500}
+  concurrency: ${RELAY_CONCURRENCY:16}
+  max-attempts: 5
+  lease-duration: 45s
+  request-timeout: 10s
+  max-pending-per-project: 10000
+  events-per-minute: 1000
+  max-payload-bytes: 65536
+  development-hosts: ${RELAY_DEVELOPMENT_HOSTS:}

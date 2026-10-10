@@ -1,0 +1,24 @@
+groups:
+  - name: relayforge
+    rules:
+      - alert: RelayForgeUnavailable
+        expr: up{job="relayforge"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: RelayForge metrics endpoint is unavailable
+      - alert: RelayForgeDeadLettersGrowing
+        expr: delta(relay_queue_deliveries{status="DEAD"}[10m]) > 20
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Dead-letter count is increasing
+      - alert: RelayForgeDeliveryFailures
+        expr: sum(rate(relay_delivery_attempts_total{outcome=~"retryable_failure|permanent_failure"}[5m])) / clamp_min(sum(rate(relay_delivery_attempts_total[5m])), 0.001) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: More than 20 percent of delivery attempts are failing

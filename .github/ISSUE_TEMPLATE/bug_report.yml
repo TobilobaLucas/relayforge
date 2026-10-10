@@ -1,0 +1,22 @@
+name: Bug report
+description: Report a reproducible failure
+body:
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Include commands or requests, expected behavior, and actual behavior. Remove all credentials and sensitive payloads.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Java version, operating system, PostgreSQL version, and commit or release.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs and request ID
+      description: Redact secrets before posting logs.

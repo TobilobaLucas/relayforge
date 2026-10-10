@@ -1,0 +1,31 @@
+# Builds, reports, and local tools
+target/
+.local/
+out/
+bin/
+*.class
+
+# Editors and operating systems
+.idea/
+.vscode/
+.settings/
+.classpath
+.project
+.factorypath
+*.iml
+.DS_Store
+Thumbs.db
+
+# Local credentials and machine-specific settings
+.env
+.env.*
+!.env.example
+.envrc
+.direnv/
+
+# Logs and temporary Python files used by the demo
+*.log
+hs_err_pid*
+replay_pid*
+__pycache__/
+*.py[cod]
