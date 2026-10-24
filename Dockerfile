@@ -5,7 +5,7 @@ RUN mvn -B -ntp dependency:go-offline
 COPY src ./src
 RUN mvn -B -ntp -DskipTests package
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:24-jre-alpine
 RUN addgroup -S relay && adduser -S relay -G relay
 WORKDIR /app
 COPY --from=build --chown=relay:relay /workspace/target/relayforge-1.0.0.jar app.jar
